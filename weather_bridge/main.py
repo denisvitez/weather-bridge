@@ -1,23 +1,30 @@
 from typing import Optional
 
 from fastapi import FastAPI, Request
-from .lib import parse_string_to_key_pair, convert_units_speed, convert_units_temp, convert_units_depth
+from .lib import \
+    parse_string_to_key_pair, \
+    convert_units_speed, \
+    convert_units_temp, \
+    convert_units_depth, \
+    add_env_to_dict, \
+    get_data_dict, \
+    send_mqtt
 import os
 from paho.mqtt import client as mqtt_client
 
 
-def init_mqtt(client_id, username, password, broker, port):
-    def on_connect(client, userdata, flags, rc):
+def init_mqtt(p_client_id, p_username, p_password, p_broker, p_port):
+    def on_connect(cli, userdata, flags, rc):
         if rc == 0:
             print("Connected to MQTT Broker!")
         else:
             print("Failed to connect, return code %d\n", rc)
     # Set Connecting Client ID
-    client = mqtt_client.Client(client_id)
-    if username:
-        client.username_pw_set(username, password)
+    client = mqtt_client.Client(p_client_id)
+    if p_username:
+        client.username_pw_set(p_username, p_password)
     client.on_connect = on_connect
-    client.connect(broker, port)
+    client.connect(p_broker, p_port)
     return client
 
 
@@ -35,15 +42,34 @@ if os.getenv("SERVICE_MQTT", False):
     else:
         client_mqtt = init_mqtt(client_id, username, password, broker, port)
 
-
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
+mqtt_topic = os.getenv("MQTT_TOPIC", "ws_bridge")
 
 
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: Optional[str] = None):
-    return {"item_id": item_id, "q": q}
+@app.get("/config")
+def get_config():
+    data = dict()
+    # Services
+    add_env_to_dict(data, "SERVICE_MQTT")
+    add_env_to_dict(data, "SERVICE_TS")
+    # MQTT settings
+    add_env_to_dict(data, "MQTT_HOST")
+    add_env_to_dict(data, "MQTT_PORT")
+    add_env_to_dict(data, "MQTT_ID")
+    add_env_to_dict(data, "MQTT_USERNAME")
+    add_env_to_dict(data, "MQTT_PASSWORD", True)
+    add_env_to_dict(data, "MQTT_TOPIC")
+    # TS settings
+    add_env_to_dict(data, "TS_KEY")
+    add_env_to_dict(data, "TS_FIELD1")
+    add_env_to_dict(data, "TS_FIELD2")
+    add_env_to_dict(data, "TS_FIELD3")
+    add_env_to_dict(data, "TS_FIELD4")
+    add_env_to_dict(data, "TS_FIELD5")
+    # Converter settings
+    add_env_to_dict(data, "CONVERT_TEMP")
+    add_env_to_dict(data, "CONVERT_SPEED")
+    add_env_to_dict(data, "CONVERT_DEPTH")
+    return data
 
 
 @app.post("/hook")
@@ -62,13 +88,16 @@ async def read_item(request: Request):
         convert_units_depth(data)
         print("Depth conversion is enabled.")
     # Check if MQTT is enabled
+    relevant_data = get_data_dict(data)
     if os.getenv("SERVICE_MQTT", False):
         print("MQTT is enabled")
         try:
-            client_mqtt.publish("ws_dev/temp", data["temp"])
+            # Send all relevant data
+            print(relevant_data)
+            send_mqtt(client_mqtt, mqtt_topic, relevant_data)
             print("MQTT messages sent")
         except (RuntimeError, TypeError, NameError) as err:
-            print("Failure with sending to MQTT")
+            print("Failure with sending to MQTT", err)
     # Check if ThingsSpeak is enabled
     if os.getenv("SERVICE_TS", False):
         print("ThingSpeak is enabled")
