@@ -1,5 +1,3 @@
-from typing import Optional
-
 from fastapi import FastAPI, Request
 from .lib import \
     parse_string_to_key_pair, \
@@ -11,6 +9,7 @@ from .lib import \
     send_mqtt
 import os
 from paho.mqtt import client as mqtt_client
+import requests
 
 
 def init_mqtt(p_client_id, p_username, p_password, p_broker, p_port):
@@ -102,7 +101,24 @@ async def read_item(request: Request):
     if os.getenv("SERVICE_TS", False):
         print("ThingSpeak is enabled")
         try:
-            print("")
+            if not os.getenv("TS_KEY", None):
+                print("ThingsSpeak API key is not set!")
+            else:
+                par = dict()
+                par["api_key"] = os.getenv("TS_KEY")
+                if os.getenv("TS_FIELD1", None):
+                    par["field1"] = relevant_data[os.getenv("TS_FIELD1")]
+                if os.getenv("TS_FIELD2", None):
+                    par["field2"] = relevant_data[os.getenv("TS_FIELD2")]
+                if os.getenv("TS_FIELD3", None):
+                    par["field3"] = relevant_data[os.getenv("TS_FIELD3")]
+                if os.getenv("TS_FIELD4", None):
+                    par["field4"] = relevant_data[os.getenv("TS_FIELD4")]
+                if os.getenv("TS_FIELD5", None):
+                    par["field5"] = relevant_data[os.getenv("TS_FIELD5")]
+                print("Request params:", par)
+                result = requests.get("https://api.thingspeak.com/update", params=par)
+                print("Executed ThingsSpeak request with status:", result.status_code)
         except (RuntimeError, TypeError, NameError) as err:
             print("Failure with sending to ThingsSpeak")
             print(err)
