@@ -50,6 +50,7 @@ def get_config():
     # Services
     add_env_to_dict(data, "SERVICE_MQTT")
     add_env_to_dict(data, "SERVICE_TS")
+    add_env_to_dict(data, "SERVICE_CUSTOM")
     # MQTT settings
     add_env_to_dict(data, "MQTT_HOST")
     add_env_to_dict(data, "MQTT_PORT")
@@ -121,6 +122,16 @@ async def read_item(request: Request):
                 print("Executed ThingsSpeak request with status:", result.status_code)
         except (RuntimeError, TypeError, NameError) as err:
             print("Failure with sending to ThingsSpeak")
+            print(err)
+    # Check if ThingsSpeak is enabled
+    if os.getenv("SERVICE_CUSTOM", False):
+        print("Custom hook is enabled")
+        try:
+            url = os.getenv("CUSTOM_URL", None)
+            result = requests.post(url, json=relevant_data)
+            print("Executed custom hook request with status:", result.status_code)
+        except (RuntimeError, TypeError, NameError) as err:
+            print("Failure with sending to custom hook")
             print(err)
     print("--- Finished with the hook. ---")
     return {"data": data}
