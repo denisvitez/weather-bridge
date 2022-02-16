@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Request
-from .lib import \
+from weather_bridge.libraries import \
     parse_string_to_key_pair, \
     convert_units_speed, \
     convert_units_temp, \
