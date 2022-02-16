@@ -24,6 +24,7 @@ def init_mqtt(p_client_id, p_username, p_password, p_broker, p_port):
         client.username_pw_set(p_username, p_password)
     client.on_connect = on_connect
     client.connect(p_broker, p_port)
+    client.loop_start()
     return client
 
 
