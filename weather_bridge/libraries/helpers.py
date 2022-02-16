@@ -62,8 +62,8 @@ def get_data_dict(data: dict):
         relevant_data["temp"] = data["temp"]
         relevant_data["tempin"] = data["tempin"]
     else:
-        relevant_data["tempk"] = data["tempk"]
-        relevant_data["tempink"] = data["tempink"]
+        relevant_data["tempf"] = data["tempf"]
+        relevant_data["tempinf"] = data["tempinf"]
     if os.getenv("CONVERT_SPEED", False):
         relevant_data["windspeedkph"] = data["windspeedkph"]
         relevant_data["windgustkph"] = data["windgustkph"]
