@@ -1,6 +1,9 @@
 # weather-bridge
 Bridge project for sending weather station data to other services.
 
+Docker image:
+https://hub.docker.com/repository/docker/denisvitez/weather-bridge
+
 This project uses Poetry for dependency management.
 Install dependencies: poetry install
 
