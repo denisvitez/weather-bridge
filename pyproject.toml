@@ -5,7 +5,7 @@ description = ""
 authors = ["Your Name <you@example.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.8.10"
 fastapi = "^0.73.0"
 uvicorn = "^0.17.4"
 paho-mqtt = "^1.6.1"
