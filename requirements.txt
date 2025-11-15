@@ -1,0 +1,7 @@
+fastapi==0.73.0
+uvicorn==0.17.4
+paho-mqtt==1.6.1
+requests==2.27.1
+
+# Development dependencies (optional)
+pytest==5.2.0

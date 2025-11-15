@@ -88,6 +88,8 @@ def get_data_dict(data: dict):
         relevant_data["weeklyrainin"] = data["weeklyrainin"]
         relevant_data["monthlyrainin"] = data["monthlyrainin"]
         relevant_data["totalrainin"] = data["totalrainin"]
+    relevant_data['solarradiation'] = data["solarradiation"]
+    relevant_data['uv'] = data["uv"]
     return relevant_data
 
 
